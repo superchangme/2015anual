@@ -28,6 +28,9 @@
         var targetCdf = pdf2cdf(targetPdf);
         var cur_index=0;
         var hidePeopleArr=[];
+        var mcWidth=50;
+        var imgWidth=mcWidth-15;
+        var anim_counts=0;
         var indexArr=(function(max,arr){
            for(var i=0;i<max;i++){
                if(hideArr.indexOf(i)==-1){
@@ -44,10 +47,13 @@
         function init() {
             //examples.showDistractor();
             //wait for the image to load
+            var mask=new createjs.Shape();
             canvas = document.getElementById("testCanvas");
             stage = new createjs.Stage(canvas);
             container = new createjs.Container().set({name: "container"});
-            container.x=container.y=40;
+            container.x=container.y=mcWidth;
+            mask.graphics = new createjs.Graphics().beginFill("blue").rect(0, 0, canvas.width,(max/_w)*mcWidth+mcWidth);
+            container.mask=mask;
             stage.addChild(container);
             /*
             for(var i=0;i<100;i++){
@@ -74,7 +80,7 @@
                      //50   MC的宽度35     加上   15间距=50
                      pMc.y=Math.floor(i/w)*50//-Math.random()*20;*/
                     var img = new Image();
-                    var x=i%_w*50+getRandom(-10,10),y=Math.floor(i/_w)*50+getRandom(-10,10);
+                    var x=i%_w*mcWidth+getRandom(-10,10),y=Math.floor(i/_w)*mcWidth+getRandom(-10,10);
                     img.onload = proxy(handleImageLoad,img,x,y,i);
                     img.src = "img/Penguins.jpg";
                     angle = 0;
@@ -90,19 +96,17 @@
             return Math.floor(Math.random()*(max-min+1)+min)
         }
         function handleImageLoad(img,x,y,i) {
-            var shape2=new createjs.Shape();
-            shape2.graphics.beginFill("blue").drawRoundRect(0, 0, 50, 50, 5);
             var shape = new createjs.Shape();
             var bmp = new createjs.Bitmap(img);
             var child = new createjs.Container();
-            var width=36;
+            var width=imgWidth;
 //            console.log(x,y)
             shape.graphics = new createjs.Graphics().drawCircle(0, 0, width/2).endStroke();
-            shape.x=width/2-18;
-            shape.y=width/2-18;
+            shape.x=width/2-imgWidth/2;
+            shape.y=width/2-imgWidth/2;
             bmp.mask=shape;
-            bmp.x=0-18;
-            bmp.y=0-18;
+            bmp.x=0-imgWidth/2;
+            bmp.y=0-imgWidth/2;
             bmp.scaleX=bmp.scaleY=width/img.width;
             child.alpha=0;
             child.index=i;
@@ -114,7 +118,8 @@
             container.addChild(child);
             people.push(child);
             peoplePosArr.push(i);
-            animOne(child);
+            var line=new createjs.Shape(new createjs.Graphics().beginStroke("rgba(0,255,0,0.5)").moveTo(400-x, 800-y).lineTo(0, 0).endStroke());
+            animOne(child,null,line);
             //stage.addChild(shape2)
             stage.update();
             return
@@ -148,10 +153,10 @@
         }
 
         function tick(event) {
-            if(container.x>100||container.x<-100){
+            /*if(container.x>100||container.x<-100){
                 step=-step;
             }
-            container.x+=step;
+            container.x+=step;*/
             var now=+new Date;
             //每隔100ms放大缩小头像
             if(now-cur_time>throttle){
@@ -165,23 +170,28 @@
            // angle += 0.025;
         }
         //单个进场动画
-        function animOne(target,linkOne){
-            var _linkOne=linkOne;
+        function animOne(target,linkOne,line){
+            var _linkOne=linkOne,mx,my;
             if(peoplePosArr.length>indexArr.length){
                 _linkOne=getSamePos(target.index,target);
             }
             if(_linkOne){
                 createjs.Tween.get(_linkOne)
-                        .to({alpha: 0}, throttle*0.5,createjs.Ease.sineOut)
+                        .to({alpha: 0}, throttle*0.3,createjs.Ease.sineOut)
                         .call(function(){
                             hidePeopleArr.push(_linkOne)
                         });
             }
+            mx=Math.random()>0.5?getRandom(5,10):getRandom(-10,-5);
+//            my=Math.random()>0.5?getRandom(5,10):getRandom(-10,-5);
             createjs.Tween.get(target)
                     .to({alpha: 1}, throttle*0.5,createjs.Ease.sineInOut)
                     .call(function(){
-
-                    });
+                            if(line&&(people.length<50||people.length%3==0)){
+                                target.addChildAt(line,0)
+                            }
+                    }).wait(throttle*0.52).to({x:target.x+mx},100,createjs.Ease.bounceInOut).
+                    wait(101).to({x:target.x-mx},throttle*0.52,createjs.Ease.sineIn);
         }
         function getSamePos(index,target){
             if(target.linkOne){
@@ -198,14 +208,21 @@
 
         //切换显示
         function switchShow(){
-            for(var i= 0;i<5;i++){
+            if(anim_counts!=0&&anim_counts%50==0){
+                hidePeopleArr.sort(function(){
+                    return Math.random()>0.5;
+                })
+            }
+            anim_counts++;
+            var counts=getRandom(4,8);
+            for(var i= 0;i<counts;i++){
                  if(hidePeopleArr[i]&&hidePeopleArr[i].alpha==0){
                      if(hidePeopleArr[i].linkOne){
                          animOne(hidePeopleArr[i],hidePeopleArr[i].linkOne)
                      }
                  }
             }
-            hidePeopleArr.push(hidePeopleArr.splice(0,5));
+            hidePeopleArr.push(hidePeopleArr.splice(0,counts));
         }
         function scaleAll(){
             var isBack=false,_o,big,small;
