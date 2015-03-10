@@ -177,7 +177,7 @@
             }
             if(_linkOne){
                 createjs.Tween.get(_linkOne)
-                        .to({alpha: 0}, throttle*0.3,createjs.Ease.sineOut)
+                        .to({alpha: 0}, throttle*0.5,createjs.Ease.sineOut)
                         .call(function(){
                             hidePeopleArr.push(_linkOne)
                         });

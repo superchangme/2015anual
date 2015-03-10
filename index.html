@@ -6,7 +6,7 @@
     <link rel="stylesheet" href="css/normalize.css">
     <link rel="stylesheet" href="css/main.css">
 </head>
-<body>
+<body onload="init();">
    <div class="app">
         <div class="mes-box">
              <h2>祝福留言版</h2>
@@ -17,7 +17,8 @@
             </ul>
         </div>
        <div class="main-box">
-
+           <canvas id="mainCanvas" width="935" height="640"></canvas>
+           <div class="logo"></div>
        </div>
        <div class="mes-box">
            <h2>祝福留言版</h2>
@@ -27,4 +28,11 @@
        </div>
    </div>
 </body>
+<script src="js/zepto.js"></script>
+<script src="js/zepto.fx.js"></script>
+<script src="js/createjs.js"></script>
+<script>
+    var app={getPeopleUrl:"json/people.json",getMess:"json/mess.json"}
+</script>
+<script src="js/main.js"></script>
 </html>
