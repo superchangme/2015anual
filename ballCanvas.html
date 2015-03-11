@@ -190,7 +190,7 @@
                             if(line&&(people.length<50||people.length%3==0)){
                                 target.addChildAt(line,0)
                             }
-                    }).wait(throttle*0.52).to({x:target.x+mx},100,createjs.Ease.bounceInOut).
+                    }).to({x:target.x+mx},100,createjs.Ease.bounceInOut).
                     wait(101).to({x:target.x-mx},throttle*0.52,createjs.Ease.sineIn);
         }
         function getSamePos(index,target){

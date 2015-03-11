@@ -8,29 +8,45 @@
 </head>
 <body onload="init();">
    <div class="app">
-        <div class="mes-box">
+        <div class="mess-bd">
              <h2>祝福留言版</h2>
-            <ul class="mess-list">
-               <li>
-                   <img src=""/>
-               </li>
-            </ul>
+            <div class="mess-list-box">
+                <ul class="mess-list">
+                </ul>
+            </div>
         </div>
-       <div class="main-box">
+       <div class="main-bd">
            <canvas id="mainCanvas" width="935" height="640"></canvas>
            <div class="logo"></div>
        </div>
-       <div class="mes-box">
+       <div class="mess-bd">
            <h2>祝福留言版</h2>
-           <ul class="mess-list">
+           <div class="mess-list-box">
+               <ul class="mess-list">
 
-           </ul>
+               </ul>
+           </div>
        </div>
    </div>
+<script type="text/html" id="messTmpl">
+    <li>
+        <div class="head-box"><img src="<%=headimgurl%>"/></div>
+        <div class="mess-box">
+            <div class="info-line">
+                <span class="name"><%=nickname%></span><span class="time"><%=ctime%></span>
+                <div class="mess">
+                    <%=mess%>
+                </div>
+            </div>
+        </div>
+    </li>
+</script>
 </body>
 <script src="js/zepto.js"></script>
 <script src="js/zepto.fx.js"></script>
+<script src="js/zepto.deferred.js"></script>
 <script src="js/createjs.js"></script>
+<script src="js/plugins.js"></script>
 <script>
     var app={getPeopleUrl:"json/people.json",getMess:"json/mess.json"}
 </script>
