@@ -358,18 +358,29 @@ function discreteSampling(cdf) {
     return -1; // should never runs here, assuming last element in cdf is 1
 }
 
+function  randomChar(l)  {
+    var  x="0123456789qwertyuioplkjhgfdsazxcvbnm";
+    var  tmp="";
+    var timestamp = new Date().getTime();
+    for(var  i=0;i<  l;i++)  {
+        tmp  +=  x.charAt(Math.ceil(Math.random()*100000000)%x.length);
+    }
+    return tmp;
+    }
 function addMess(body,data,listIndex){
     cur_time=+new Date;
     if(data&&data.mess_time){
         //显示时间
         data.ctime=formatTime(cur_time,data.mess_time);
     }
-    body.append(messTmpl(data));
-    scrollList(body,listIndex);
+    var l=getRandom(10,200);
+    data.mess=randomChar(l)
+   // body.prepend(messTmpl(data));
+    scrollList(body,listIndex,messTmpl(data));
 }
 //to backend
 //推送消息
-setInterval(function(){
+/*setInterval(function(){
     $.post(app.getPeopleUrl,{id:cur_people_id},function(data){
           if(data.result+""=="true"){
               for(var i= 0,l=data.list.length;i<l;i++){
@@ -378,7 +389,7 @@ setInterval(function(){
               cur_people_id=data.list[l-1].id;
           }
     },"json")
-},people_comet_interval/10);
+},people_comet_interval/10);*/
 //推送新签到
 setInterval(function(){
     $.post(app.getMess,{id:cur_mess_id},function(data){
@@ -429,42 +440,52 @@ function refreshTime(){
 
 }
 //自动滚动
-function scrollList(body,listIndex){
+function scrollList(body,listIndex,data){
     if(!isScrollArr[listIndex]){
-        if(body.height()>messListHeight){
-            scrollNow(body);
+        scrollNow(body,data);
+        isScrollArr[listIndex]=true;
+    /*    if(body.height()>messListHeight){
+            scrollNow(body,data);
             isScrollArr[listIndex]=true;
-        }
+        }*/
     }else{
-        scrollNow(body);
+        scrollNow(body,data);
     }
 }
 function _scrollNow(){
     var deferList=[],isMoving=false;
-    function scroll(body){
+    function scroll(body,data){
         isMoving=true;
-        var top=body.data("top");
+       /* var top=body.data("top");
         if(!top){
             top=0;
-        }
+        }*/
         top+=messBoxHeight;
-        body.data("top",top);
+        body.prepend(data);
+        setTimeout(function(){
+            var next=deferList.shift();
+            isMoving=false;
+            if(next){
+                next();
+            }
+        },1000)
+        /*body.data("top",top);
         body.animateNow({translate3d:"0,-"+top+"px,0"},1000,function(){
             var next=deferList.shift();
             isMoving=false;
             if(next){
                 next();
             }
-        });
+        });*/
     }
     function addDeferList(cb){
         deferList.push(cb);
     }
-    return function(body){
+    return function(body,data){
         if(!isMoving){
-            scroll(body);
+            scroll(body,data);
         }else{
-            addDeferList(scroll.bind(null,body));
+            addDeferList(scroll.bind(null,body,data));
         }
     }
 }
