@@ -368,8 +368,8 @@ function addMess(body,data,listIndex){
         //显示时间
         data.ctime=formatTime(cur_time,data.mess_time);
     }
-    body.append(messTmpl(data));
-    scrollList(body,listIndex);
+//    body.append(messTmpl(data));
+    scrollList(body,listIndex,data);
 }
 //to backend
 //推送消息
@@ -447,42 +447,51 @@ function refreshTime(){
      }
 }
 //自动滚动
-function scrollList(body,listIndex){
+function scrollList(body,listIndex,data){
     if(!isScrollArr[listIndex]){
-        if(body.height()>messListHeight){
-            scrollNow(body);
-            isScrollArr[listIndex]=true;
-        }
+        scrollNow(body,data);
+        isScrollArr[listIndex]=true;
+        /*    if(body.height()>messListHeight){
+         scrollNow(body,data);
+         isScrollArr[listIndex]=true;
+         }*/
     }else{
-        scrollNow(body);
+        scrollNow(body,data);
     }
 }
 function _scrollNow(){
     var deferList=[],isMoving=false;
-    function scroll(body){
+    function scroll(body,data){
         isMoving=true;
-        var top=body.data("top");
-        if(!top){
-            top=0;
-        }
-        top+=messBoxHeight;
-        body.data("top",top);
-        body.animateNow({translate3d:"0,-"+top+"px,0"},1000,function(){
+        /* var top=body.data("top");
+         if(!top){
+         top=0;
+         }*/
+        body.prepend(data);
+        setTimeout(function(){
             var next=deferList.shift();
             isMoving=false;
             if(next){
                 next();
             }
-        });
+        },1000)
+        /*body.data("top",top);
+         body.animateNow({translate3d:"0,-"+top+"px,0"},1000,function(){
+         var next=deferList.shift();
+         isMoving=false;
+         if(next){
+         next();
+         }
+         });*/
     }
     function addDeferList(cb){
         deferList.push(cb);
     }
-    return function(body){
+    return function(body,data){
         if(!isMoving){
-            scroll(body);
+            scroll(body,data);
         }else{
-            addDeferList(scroll.bind(null,body));
+            addDeferList(scroll.bind(null,body,data));
         }
     }
 }
