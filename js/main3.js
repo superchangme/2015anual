@@ -32,6 +32,8 @@ var mess_comet_interval=500;
 var people_comet_interval=2000;
 var cur_people_id=null;
 var cur_mess_id=null;
+var comet_mess_lock=true;
+var comet_people_lock=true;
 var messList=$(".mess-list");
 var messPos=0;
 var messTmpl=tmpl("messTmpl");
@@ -57,6 +59,8 @@ function init() {
     //examples.showDistractor();
     //wait for the image to load
     var mask=new createjs.Shape();
+    comet_mess_lock=false;
+    comet_people_lock=false;
     canvas = document.getElementById("mainCanvas");
     stage = new createjs.Stage(canvas);
     container = new createjs.Container().set({name: "container"});
@@ -359,7 +363,7 @@ function discreteSampling(cdf) {
 }
 
 function addMess(body,data,listIndex){
-    cur_time=+new Date;
+    cur_time=+new Date/1000;
     if(data&&data.mess_time){
         //显示时间
         data.ctime=formatTime(cur_time,data.mess_time);
@@ -370,18 +374,26 @@ function addMess(body,data,listIndex){
 //to backend
 //推送消息
 setInterval(function(){
+    if(comet_people_lock){return}
+    comet_people_lock=true;
     $.post(app.getPeopleUrl,{id:cur_people_id},function(data){
+        comet_people_lock=false;
           if(data.result+""=="true"){
               for(var i= 0,l=data.list.length;i<l;i++){
                   addOne(data.list[i]);
               }
-              cur_people_id=data.list[l-1].id;
+              if(l>0){
+                  cur_people_id=data.list[l-1].id;
+              }
           }
     },"json")
-},people_comet_interval/10);
+},people_comet_interval);
 //推送新签到
 setInterval(function(){
+    if(comet_mess_lock){return}
+    comet_mess_lock=true;
     $.post(app.getMess,{id:cur_mess_id},function(data){
+        comet_mess_lock=false;
         if(data.result+""=="true"){
             var body;
             for(var i= 0,l=data.list.length;i<l;i++){
@@ -393,7 +405,10 @@ setInterval(function(){
                     body=messList.eq(1);
                     messPos=0;
                 }
+
                 addMess(body,data.list[i],messPos==0?1:0);
+            }
+            if(l>0){
                 cur_mess_id=data.list[l-1].id;
             }
         }
@@ -406,19 +421,19 @@ setInterval(function(){
 
 function formatTime(now,mess_time){
    var delta=now-mess_time;
-   if(delta<10000){
+   if(delta<10){
        return "刚刚";
-   }else if(delta<30000){
+   }else if(delta<30){
        return "三十秒前";
-   }else if(delta<60000){
+   }else if(delta<60){
        return "一分钟前"
-   }else if(delta<120000){
+   }else if(delta<120){
        return "两分钟前";
-   }else if(delta<300000){
+   }else if(delta<300){
        return "五分钟前";
-   }else if(delta<600000){
+   }else if(delta<600){
        return "十分钟前";
-   }else if(delta<1800000){
+   }else if(delta<1800){
        return "三十分钟前";
    }else{
        return "一小时前";
@@ -426,7 +441,10 @@ function formatTime(now,mess_time){
 }
 
 function refreshTime(){
-
+    var timeList=messList.find(".time"),now=+new Date/1000;
+     for(var i= 0,l=timeList.length;i<l;i++){
+           timeList.html(formatTime(now,timeList.data("time")))
+     }
 }
 //自动滚动
 function scrollList(body,listIndex){
